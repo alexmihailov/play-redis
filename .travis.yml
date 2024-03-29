@@ -49,6 +49,7 @@ services:
 before_install:
   - curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
 
+# TODO run docker-compose or exclude RedisMasterSlavesSpec
 install:
   - TRAVIS_JDK=`jabba ls-remote "adopt@>=$TRAVIS_JDK_MIN < $TRAVIS_JDK_MAX" --latest=minor`
   - jabba install "$TRAVIS_JDK" && jabba use "$TRAVIS_JDK" && java -Xmx32m -version
