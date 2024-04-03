@@ -160,6 +160,31 @@ class RedisInstanceManagerSpec extends Specification {
     )
   }
 
+  "master-slaves mode" in new WithRedisInstanceManager(
+    """
+      |play.cache.redis {
+      |  instances {
+      |    play {
+      |      master: { host: "localhost", port: 6380 }
+      |      slaves: [
+      |        { host: "localhost", port: 6381 }
+      |        { host: "localhost", port: 6382 }
+      |      ]
+      |      password: "my-password"
+      |      database: 1
+      |      source: master-slaves
+      |    }
+      |  }
+      |}
+    """
+  ) {
+    def node(port: Int) = RedisHost(localhost, port)
+
+    manager mustEqual RedisInstanceManagerTest(defaultCacheName)(
+      RedisMasterSlaves(defaultCacheName, node(6380), node(6381) :: node(6382) :: Nil, defaults.copy(source = "master-slaves"), password = "my-password", database = 1)
+    )
+  }
+
   "connection string mode" in new WithRedisInstanceManager(
     """
       |play.cache.redis {

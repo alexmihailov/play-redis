@@ -123,3 +123,44 @@ object RedisSentinel {
     }
 
 }
+
+/**
+  * Type of Redis Instance - a master-slaves. It encapsulates common settings of
+  * the master and slaves nodes.
+  */
+trait RedisMasterSlaves extends RedisInstance {
+
+  def master: RedisHost
+  def slaves: List[RedisHost]
+  def password: Option[String]
+  def database: Option[Int]
+
+  override def equals(obj: scala.Any): Boolean = obj match {
+    case that: RedisMasterSlaves => equalsAsInstance(that) && this.master == master && this.slaves == that.slaves
+  }
+  /** to string */
+  override def toString = s"MasterSlaves[master=$master, slaves=${slaves mkString ","}]"
+}
+
+object RedisMasterSlaves {
+
+  def apply(name: String, master: RedisHost,
+      slaves: List[RedisHost],
+      settings: RedisSettings,
+      password: Option[String] = None,
+      database: Option[Int] = None): RedisMasterSlaves with RedisDelegatingSettings =
+    create(name, master, slaves, password, database, settings)
+
+  @inline
+  private def create(_name: String, _master: RedisHost, _slaves: List[RedisHost],
+      _password: Option[String], _database: Option[Int],
+      _settings: RedisSettings) =
+    new RedisMasterSlaves with RedisDelegatingSettings {
+      override val name: String = _name
+      override val master: RedisHost = _master
+      override val slaves: List[RedisHost] = _slaves
+      override val password: Option[String] = _password
+      override val database: Option[Int] = _database
+      override val settings: RedisSettings = _settings
+    }
+}
